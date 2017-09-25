@@ -1,6 +1,6 @@
 #!/usr/bin/lua
-
-local site = require 'gluon.site_config'
+-- TODO: Migrate this into uci
+local site = require 'gluon.site'
 local babelconf='/etc/gluon-babeld.conf'
 
 file = io.open(babelconf, "w")
