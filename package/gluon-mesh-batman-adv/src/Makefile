@@ -1,6 +1,6 @@
 all: neighbours-batadv respondd.so
 
-CFLAGS += -Wall
+CFLAGS += -Wall -D_GNU_SOURCE
 
 ifeq ($(origin PKG_CONFIG), undefined)
   PKG_CONFIG = pkg-config
@@ -43,8 +43,7 @@ CFLAGS += $(LIBBATADV_CFLAGS)
 LDLIBS += $(LIBBATADV_LDLIBS)
 
 respondd.so: respondd.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -shared -fPIC -D_GNU_SOURCE -o $@ $^ $(LDLIBS) -lgluonutil -liwinfo -luci
+	$(CC) $(CFLAGS) $(LDFLAGS) -shared -fPIC -o $@ $^ $(LDLIBS) -lgluonutil -liwinfo -luci
 
 neighbours-batadv: neighbours-batadv.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -D_GNU_SOURCE -o $@ $^ $(LDLIBS)
-
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
