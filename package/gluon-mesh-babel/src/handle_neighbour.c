@@ -37,58 +37,18 @@ int obtain_ifmac(char *ifmac, char *ifname) {
 void handle_neighbour(char *line, struct json_object *obj) {
 	struct babelneighbour bn = {};
 
-
 	if (babelhelper_get_neighbour(&bn, line) ) {
-		char mac[18] = {};
 		struct json_object *neigh = json_object_new_object();
 
-		if (babelhelper_ll_to_mac(mac, bn.address_str)) {
-			struct in6_addr prefix = {};
+		json_object_object_add(neigh, "rxcost", json_object_new_int(bn.rxcost));
+		json_object_object_add(neigh, "txcost", json_object_new_int(bn.txcost));
+		json_object_object_add(neigh, "cost", json_object_new_int(bn.cost));
+		json_object_object_add(neigh, "reachability", json_object_new_double(bn.reach));
+		json_object_object_add(neigh, "ifname", json_object_new_string(bn.ifname));
 
-			if (!gluonutil_get_node_prefix6(&prefix)) {
-				fprintf(stderr, "Could not obtain node-prefix from site.conf. Exiting handle_neighbour.\n");
-				json_object_put(neigh);
-				goto cleanup;
-			}
-
-			json_object_object_add(neigh, "protocol", json_object_new_string("babel"));
-			json_object_object_add(neigh, "rxcost", json_object_new_int(bn.rxcost));
-			json_object_object_add(neigh, "txcost", json_object_new_int(bn.txcost));
-			json_object_object_add(neigh, "cost", json_object_new_int(bn.cost));
-			json_object_object_add(neigh, "reachability", json_object_new_double(bn.reach));
-			json_object_object_add(neigh, "address-ll", json_object_new_string(bn.address_str));
-
-			char meshaddress[INET6_ADDRSTRLEN+1] = {};
-			char prefix_str[INET6_ADDRSTRLEN +1] = {};
-			inet_ntop(AF_INET6, &(prefix.s6_addr), prefix_str, INET6_ADDRSTRLEN);
-			babelhelper_generateip_str(meshaddress, mac, prefix_str);
-			json_object_object_add(neigh, "address-mesh", json_object_new_string(meshaddress));
-
-			struct json_object *nif = 0;
-			char ifmac[18] = {};
-
-			obtain_ifmac(ifmac, bn.ifname);
-
-			if (!json_object_object_get_ex(obj, ifmac, &nif)) {
-				nif = json_object_new_object();
-				json_object_object_add(nif, "ifname", json_object_new_string(bn.ifname));
-				json_object_object_add(obj, ifmac, nif);
-			}
-
-			struct json_object *neighborcollector = 0;
-			if (!json_object_object_get_ex(nif, "neighbours", &neighborcollector)) {
-				neighborcollector = json_object_new_object();
-				json_object_object_add(nif, "neighbours", neighborcollector);
-			}
-
-			json_object_object_add(neighborcollector, mac, neigh);
-		}
-		else {
-			json_object_put(neigh);
-		}
+		json_object_object_add(obj, bn.address_str , neigh);
 	}
 
-cleanup:
 	babelhelper_babelneighbour_free_members(&bn);
 }
 
