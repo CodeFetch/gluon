@@ -5,6 +5,6 @@
   baseUrl: "js/",
   name: "../almond",
   include: "main",
-  optimize: "uglify2",
+  optimize: "none",
   out: "app.js",
 })
