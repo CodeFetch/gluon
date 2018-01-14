@@ -76,6 +76,28 @@
 
 static struct babelhelper_ctx bhelper_ctx = {};
 
+static int obtain_ifmac(unsigned char *ifmac, char *ifname) {
+	struct ifreq ifr = {};
+	int sock;
+
+	sock=socket(PF_INET, SOCK_STREAM, 0);
+	if (-1==sock) {
+		perror("socket() ");
+		return 1;
+	}
+
+	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name)-1);
+
+	if (-1==ioctl(sock, SIOCGIFHWADDR, &ifr)) {
+		perror("ioctl(SIOCGIFHWADDR) ");
+		return 1;
+	}
+	close(sock);
+
+	memcpy(ifmac, ifr.ifr_hwaddr.sa_data, 6);
+	return 0;
+}
+
 static char*  get_line_from_run(const char* command) {
 	FILE *fp;
 	char *line = NULL;
@@ -153,6 +175,23 @@ static void mesh_add_if(const char *ifname, struct json_object *wireless,
 		json_object_array_add(other, address);
 
 }
+
+struct in6_addr mac2ipv6(uint8_t mac[6], char * prefix) {
+	struct in6_addr address = {};
+	inet_pton(AF_INET6, prefix, &address);
+
+	address.s6_addr[8] = mac[0] ^ 0x02;
+	address.s6_addr[9] = mac[1];
+	address.s6_addr[10] = mac[2];
+	address.s6_addr[11] = 0xff;
+	address.s6_addr[12] = 0xfe;
+	address.s6_addr[13] = mac[3];
+	address.s6_addr[14] = mac[4];
+	address.s6_addr[15] = mac[5];
+
+	return address;
+}
+
 static void handle_neighbour(char *line, struct json_object *obj) {
 	struct babelneighbour bn = {};
 
@@ -167,9 +206,18 @@ static void handle_neighbour(char *line, struct json_object *obj) {
 		struct json_object *nif = 0;
 		if (!json_object_object_get_ex(obj, bn.ifname, &nif)) {
 			nif = json_object_new_object();
-//			json_object_object_add(nif, "ifname", json_object_new_string(bn.ifname));
+
+			unsigned char ifmac[6] = {};
+			char str_ip[INET6_ADDRSTRLEN] = {};
+
+			obtain_ifmac(ifmac, bn.ifname);
+			struct in6_addr lladdr = mac2ipv6(ifmac, "fe80::");
+			inet_ntop(AF_INET6, &lladdr.s6_addr, str_ip, INET6_ADDRSTRLEN);
+
+			json_object_object_add(nif, "ll-addr", json_object_new_string(str_ip));
 			json_object_object_add(nif, "protocol", json_object_new_string("babel"));
 			json_object_object_add(obj, bn.ifname, nif);
+
 		}
 		struct json_object *neighborcollector = 0;
 		if (!json_object_object_get_ex(nif, "neighbours", &neighborcollector)) {
@@ -247,7 +295,6 @@ static void blobmsg_handle_list(struct blob_attr *attr, int len, bool array, str
 
 	if (ifname && proto) {
 		if (!strncmp(proto, "gluon_mesh", 10)) {
-			printf("mesh-interface interface found: %s(%s)\n",ifname, proto);
 			mesh_add_if(ifname, wireless, tunnel, other);
 		}
 	}
