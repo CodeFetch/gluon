@@ -6,6 +6,8 @@ USE_PROCD=1
 PROG=/usr/sbin/l3roamd
 
 start_service () {
+	/sbin/sysctl -w net.ipv6.neigh.default.gc_thresh1=2
+#	/sbin/sysctl -w net.ipv6.neigh.default.gc_thresh2=3
 	procd_open_instance
 	procd_set_param stdout 1
 	procd_set_param stderr 1
