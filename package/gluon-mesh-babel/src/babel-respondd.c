@@ -76,7 +76,7 @@
 
 static struct babelhelper_ctx bhelper_ctx = {};
 
-static int obtain_ifmac(unsigned char *ifmac, char *ifname) {
+static int obtain_ifmac(unsigned char *ifmac, const char *ifname) {
 	struct ifreq ifr = {};
 	int sock;
 
@@ -163,19 +163,6 @@ static bool interface_file_exists(const char *ifname, const char *name) {
 	return !access(path, F_OK);
 }
 
-static void mesh_add_if(const char *ifname, struct json_object *wireless,
-		struct json_object *tunnel, struct json_object *other) {
-	struct json_object *address = gluonutil_wrap_and_free_string(gluonutil_get_interface_address(ifname));
-
-	if (interface_file_exists(ifname, "wireless"))
-		json_object_array_add(wireless, address);
-	else if (interface_file_exists(ifname, "tun_flags"))
-		json_object_array_add(tunnel, address);
-	else
-		json_object_array_add(other, address);
-
-}
-
 struct in6_addr mac2ipv6(uint8_t mac[6], char * prefix) {
 	struct in6_addr address = {};
 	inet_pton(AF_INET6, prefix, &address);
@@ -190,6 +177,28 @@ struct in6_addr mac2ipv6(uint8_t mac[6], char * prefix) {
 	address.s6_addr[15] = mac[5];
 
 	return address;
+}
+
+static void mesh_add_if(const char *ifname, struct json_object *wireless,
+		struct json_object *tunnel, struct json_object *other) {
+	char str_ip[INET6_ADDRSTRLEN] = {};
+	unsigned char mac[6] = {};
+
+	if (obtain_ifmac(mac, ifname))
+		return;
+
+	struct in6_addr lladdr = mac2ipv6(mac, "fe80::");
+	inet_ntop(AF_INET6, &lladdr.s6_addr, str_ip, INET6_ADDRSTRLEN);
+
+	struct json_object *address = json_object_new_string(str_ip);
+
+	if (interface_file_exists(ifname, "wireless"))
+		json_object_array_add(wireless, address);
+	else if (interface_file_exists(ifname, "tun_flags"))
+		json_object_array_add(tunnel, address);
+	else
+		json_object_array_add(other, address);
+
 }
 
 static void handle_neighbour(char *line, struct json_object *obj) {
@@ -210,7 +219,7 @@ static void handle_neighbour(char *line, struct json_object *obj) {
 			unsigned char ifmac[6] = {};
 			char str_ip[INET6_ADDRSTRLEN] = {};
 
-			obtain_ifmac(ifmac, bn.ifname);
+			obtain_ifmac(ifmac, (const char*)bn.ifname);
 			struct in6_addr lladdr = mac2ipv6(ifmac, "fe80::");
 			inet_ntop(AF_INET6, &lladdr.s6_addr, str_ip, INET6_ADDRSTRLEN);
 
