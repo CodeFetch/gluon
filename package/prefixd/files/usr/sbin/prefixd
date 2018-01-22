@@ -108,11 +108,11 @@ handle_prefix() {
 }
 
 start_roaming() {
-	echo "add_prefix $1"| nc -U $L3ROAMDSOCK
+	echo "add_prefix $1"| socat - $L3ROAMDSOCK
 }
 
 stop_roaming() {
-	echo "del_prefix $1"| nc -U $L3ROAMDSOCK
+	echo "del_prefix $1"| socat - $L3ROAMDSOCK
 }
 
 enabled=$(uci get prefixd.ffshare1.enabled 2>/devnull)
@@ -128,7 +128,6 @@ fi
 
 while true
 do
-#TODO: handle starting/stopping of l3roamd together with uradvd.
 	$IP -6 r s default proto babel |grep -v "$NETWIDEPREFIX"|grep from|grep metric|sort -k9 -n >$tmpfile1
 	while read
 	do
