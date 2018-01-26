@@ -10,7 +10,8 @@ maxprefixes=3
 # TODO: do not hard-code the network prefix.
 # this prefix is really not in site.conf  this is whatever the ipv6 range of
 # the community is. where can we get this value?
-NETWIDEPREFIX="2a06:8187:fb00::/40"
+NETWIDEPREFIX=$(uci get prefixd.ffshare1.netprefix 2>/devnull)
+#NETWIDEPREFIX="2a06:8187:fb00::/40"
 L3ROAMDSOCK=/var/run/l3roamd.sock
 
 
