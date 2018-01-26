@@ -14,6 +14,7 @@ file:write("redistribute ip " .. site.next_node.ip6 .. "/128 deny\n")
 file:write("redistribute ip " .. site.prefix6 .. " eq 128  allow\n")
 file:write("redistribute ip fec0:: eq 128  allow\n")
 file:write("redistribute ip " .. site.babel_mesh.prefix .. " eq 128  allow\n")
+file:write("redistribute local if br-wan deny")
 file:close()
 
 
