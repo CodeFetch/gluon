@@ -1,0 +1,24 @@
+#!/usr/bin/lua
+
+local site = require 'gluon.site_config'
+
+local uci = require('simple-uci').cursor()
+
+local plen = site.prefix4:match('%d+$')
+uci:delete('dhcp', 'dhcp', 'local_node')
+uci:section('dhcp', 'dhcp', 'local_node', {
+	interface = 'local_node',
+	start = '0',
+	limit = 2^plen
+})
+
+uci:section('firewall', 'rule', 'local_node_dhcp', {
+	src = 'local_client',
+	name = 'allow_dhcp_local_client',
+	dest_port = '67',
+	proto = 'udp',
+	target = 'ACCEPT'
+})
+
+uci:save('dhcp')
+uci:save('firewall')
