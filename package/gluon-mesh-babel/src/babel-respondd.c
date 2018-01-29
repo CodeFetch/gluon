@@ -67,7 +67,6 @@
 #define BABEL_PORT 33123
 #define VPN_INTERFACE "mesh-vpn"
 #define l3rdctl "/var/run/l3roamd.sock"
-#include "handle_neighbour.h"
 
 #define IFNAMELEN 32
 #define PROTOLEN 32
@@ -153,6 +152,35 @@ static void mesh_add_if(const char *ifname, struct json_object *wireless,
 	else
 		json_object_array_add(other, address);
 
+}
+static void handle_neighbour(char *line, struct json_object *obj) {
+	struct babelneighbour bn = {};
+
+	if (babelhelper_get_neighbour(&bn, line) ) {
+		struct json_object *neigh = json_object_new_object();
+
+		json_object_object_add(neigh, "rxcost", json_object_new_int(bn.rxcost));
+		json_object_object_add(neigh, "txcost", json_object_new_int(bn.txcost));
+		json_object_object_add(neigh, "cost", json_object_new_int(bn.cost));
+		json_object_object_add(neigh, "reachability", json_object_new_double(bn.reach));
+
+		struct json_object *nif = 0;
+		if (!json_object_object_get_ex(obj, bn.ifname, &nif)) {
+			nif = json_object_new_object();
+//			json_object_object_add(nif, "ifname", json_object_new_string(bn.ifname));
+			json_object_object_add(nif, "protocol", json_object_new_string("babel"));
+			json_object_object_add(obj, bn.ifname, nif);
+		}
+		struct json_object *neighborcollector = 0;
+		if (!json_object_object_get_ex(nif, "neighbours", &neighborcollector)) {
+			neighborcollector = json_object_new_object();
+			json_object_object_add(nif, "neighbours", neighborcollector);
+		}
+
+		json_object_object_add(neighborcollector, bn.address_str, neigh);
+	}
+
+	babelhelper_babelneighbour_free_members(&bn);
 }
 
 static bool process_line_neighbours(char *lineptr, void *obj){
