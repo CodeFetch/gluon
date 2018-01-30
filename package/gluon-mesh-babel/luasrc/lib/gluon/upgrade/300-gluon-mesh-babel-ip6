@@ -96,7 +96,7 @@ function mac_to_ip(prefix, mac)
 	return string.format("%x:%x:%x:%x:%x:%x:%x:%x/%d", p1, p2, p3, p4, h1, h2, h3, h4, 128)
 end
 
-local ip = mac_to_ip(site.node_prefix6, sysconfig.primary_mac)
+local ip = mac_to_ip(site.node_prefix6(), sysconfig.primary_mac)
 
 uci:set('network', 'loopback', 'ip6addr', ip)
 uci:save('network')

@@ -1,12 +1,8 @@
-need_string_match({'node_prefix6'}, '^[%x:]+/64$')
-need_boolean('mesh_on_wan', false)
+need_string_match(in_domain({'node_prefix6'}), '^[%x:]+/64$')
 
-if need_string_match({'next_node.ip4'}, '^%d+.%d+.%d+.%d+$', false) then
-	need_string_match({'prefix4'}, '^%d+.%d+.%d+.%d+/%d+$')
-end
+need_string_match(in_domain({'next_node', 'ip6'}), '^[%x:]+$', false)
+need_string_match(in_domain({'next_node', 'ip4'}), '^%d+.%d+.%d+.%d+$', false)
 
-need_string_match({'next_node.ip6'}, '^[%x:]+$')
-
-need_string_match({'next_node.mac'}, '^%x[02468aAcCeE]:%x%x:%x%x:%x%x:%x%x:%x%x$')
+need_string_match(in_domain({'next_node', 'mac'}), '^%x[02468aAcCeE]:%x%x:%x%x:%x%x:%x%x:%x%x$', false)
 
 
