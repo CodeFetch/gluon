@@ -8,6 +8,10 @@ MAXDELAY=10
 
 start_service() {
 	local ifdump="$(ubus call network.interface dump)"
+	[ -e /proc/sys/kernel/core_pattern ] && {
+		procd_set_param limits core="unlimited"
+	}
+
 
 	local meshdevs=$(for dev in $(echo "$ifdump" | jsonfilter -e "@.interface[@.proto='gluon_mesh' && @.up=true].device"); do echo " -i $dev";done;)
 	local clientdevs=$(for dev in $(echo "$ifdump" | jsonfilter -e "@.interface[@.interface='$(cat /lib/gluon/respondd/client.dev 2>/dev/null)' && @.up=true].device"); do echo " -i $dev -t $MAXDELAY";done;)
