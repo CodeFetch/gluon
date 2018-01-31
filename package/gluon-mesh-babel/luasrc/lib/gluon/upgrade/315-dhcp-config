@@ -5,8 +5,9 @@ local site = require 'gluon.site_config'
 local uci = require('simple-uci').cursor()
 
 local plen = site.prefix4:match('%d+$')
-uci:delete('dhcp', 'dhcp', 'local_node')
+uci:delete('dhcp', 'local_node')
 uci:section('dhcp', 'dhcp', 'local_node', {
+	ignore = false,
 	interface = 'local_node',
 	start = '0',
 	limit = 2^plen
