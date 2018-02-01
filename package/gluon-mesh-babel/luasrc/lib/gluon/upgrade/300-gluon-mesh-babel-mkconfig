@@ -1,5 +1,6 @@
 #!/usr/bin/lua
 -- TODO: Migrate this into uci
+
 local site = require 'gluon.site'
 local babelconf='/etc/gluon-babeld.conf'
 
@@ -9,13 +10,13 @@ file:write("reflect-kernel-metric true\n")
 file:write("export-table 254\n")
 file:write("import-table 254\n")
 
-file:write("out ip " .. site.next_node.ip6 .. "/128 deny\n")
-file:write("redistribute ip " .. site.next_node.ip6 .. "/128 deny\n")
-file:write("redistribute ip " .. site.prefix6 .. " eq 128  allow\n")
+file:write("out ip " .. site.next_node.ip6() .. "/128 deny\n")
+file:write("redistribute ip " .. site.next_node.ip6() .. "/128 deny\n")
+file:write("redistribute ip " .. site.prefix6() .. " eq 128  allow\n")
 file:write("redistribute ip fec0:: eq 128  allow\n")
-file:write("redistribute ip " .. site.babel_mesh.prefix .. " eq 128  allow\n")
-file:write("redistribute local if br-wan deny")
-file:write("redistribute local ip 0.0.0.0/0 deny")
+file:write("redistribute ip " .. site.node_prefix6() .. " eq 128  allow\n")
+file:write("redistribute local if br-wan deny\n")
+file:write("redistribute local ip 0.0.0.0/0 deny\n")
 file:close()
 
 

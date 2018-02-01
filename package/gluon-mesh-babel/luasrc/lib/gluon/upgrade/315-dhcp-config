@@ -1,10 +1,10 @@
 #!/usr/bin/lua
 
-local site = require 'gluon.site_config'
+local site = require 'gluon.site'
 
 local uci = require('simple-uci').cursor()
 
-local plen = site.prefix4:match('%d+$')
+local plen = site.prefix4():match('%d+$')
 uci:delete('dhcp', 'local_node')
 uci:section('dhcp', 'dhcp', 'local_node', {
 	ignore = false,

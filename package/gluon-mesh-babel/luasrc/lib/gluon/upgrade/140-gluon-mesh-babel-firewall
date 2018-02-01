@@ -3,7 +3,7 @@
 -- TODO: replace REJECT by DROP. only use REJECT for debugging
 
 local uci = require('simple-uci').cursor()
-local site = require "gluon.site_config"
+local site = require "gluon.site"
 
 uci:section('firewall', 'zone', 'l3roamd', {
 	name = 'l3roamd',
