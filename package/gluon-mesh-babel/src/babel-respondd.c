@@ -565,6 +565,7 @@ static int ask_l3roamd_for_client_count() {
 	memset(buf, '\0', SOCKET_INPUT_BUFFER_SIZE);
 	if (read(fd, buf, SOCKET_INPUT_BUFFER_SIZE) < 0 ) {
 		perror("error on read in ask_l3roamd_for_client_count():");
+		goto end;
 	}
 
 	json_object * jobj = json_tokener_parse(buf);
