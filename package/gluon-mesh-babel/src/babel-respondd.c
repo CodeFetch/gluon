@@ -529,8 +529,7 @@ static bool process_line_addgw(char *lineptr, void *obj){
 
 static int json_parse_get_clients(json_object * object) {
 	json_object_object_foreach(object, key, val) {
-		if (! strcmp("clients", key))
-		{
+		if (! strncmp("clients", key, 7)) {
 			return(json_object_get_int(val));
 		}
 	}
@@ -542,6 +541,8 @@ static int ask_l3roamd_for_client_count() {
 	const char *socket_path = "/var/run/l3roamd.sock";
 	int fd;
 	int clients = -1;
+	char *buf = NULL;
+	int already_read = 0;
 
 	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
 		fprintf(stderr, "could not setup l3roamd-control-socket\n");
@@ -561,18 +562,31 @@ static int ask_l3roamd_for_client_count() {
 		perror("could not send command to l3roamd socket: get_clients");
 		goto end;
 	}
-	char buf[SOCKET_INPUT_BUFFER_SIZE];
-	memset(buf, '\0', SOCKET_INPUT_BUFFER_SIZE);
-	if (read(fd, buf, SOCKET_INPUT_BUFFER_SIZE) < 0 ) {
-		perror("error on read in ask_l3roamd_for_client_count():");
-		goto end;
-	}
 
+	int rc = 0;
+	do {
+		buf = realloc(buf, already_read + SOCKET_INPUT_BUFFER_SIZE + 1);
+		if (buf == NULL) {
+			fprintf(stderr, "could not allocate memory for buffer\n");
+			goto end;
+		}
+		buf[already_read + SOCKET_INPUT_BUFFER_SIZE] = '\0';
+
+		rc = read(fd, &buf[already_read], SOCKET_INPUT_BUFFER_SIZE);
+		already_read+=rc;
+		if (rc < 0) {
+			perror("error on read in ask_l3roamd_for_client_count():");
+			goto end;
+		}
+	} while (rc == SOCKET_INPUT_BUFFER_SIZE);
+
+	printf("parsing data: %s\n", buf);
 	json_object * jobj = json_tokener_parse(buf);
 	clients = json_parse_get_clients(jobj);
 	json_object_put(jobj);
 
 end:
+	free(buf);
 	close(fd);
 
 	return clients;
