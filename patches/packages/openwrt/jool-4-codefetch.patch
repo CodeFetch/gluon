@@ -1,0 +1,104 @@
+From 4d6018c6dae61895a1915171a236d36b7f533aa9 Mon Sep 17 00:00:00 2001
+From: Vincent Wiemann <webmaster@codefetch.de>
+Date: Sun, 11 Feb 2018 01:29:43 +0000
+Subject: [PATCH] Fix typo
+
+---
+ net/jool/Makefile | 49 ++++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 36 insertions(+), 13 deletions(-)
+
+diff --git a/net/jool/Makefile b/net/jool/Makefile
+index 0a6d6915686..980bb4b833c 100644
+--- a/net/jool/Makefile
++++ b/net/jool/Makefile
+@@ -1,5 +1,5 @@
+ #
+-# Copyright (C) 2016 Dan Luedtke <mail@danrl.com>
++# Copyright (C) 2016-2017 Dan Luedtke <mail@danrl.com>
+ #
+ # This is free software, licensed under the GNU General Public License v2.
+ # See /LICENSE for more information.
+@@ -7,17 +7,18 @@
+ include $(TOPDIR)/rules.mk
+ 
+ PKG_NAME:=jool
+-PKG_VERSION:=2016.12.17
+-PKG_RELEASE:=2
++PKG_VERSION:=2018.01.17
++PKG_RELEASE:=1
+ 
+-PKG_LICENSE:=GPL-3.0
++PKG_LICENSE:=GPL-2.0
+ PKG_LICENSE_FILES:=COPYING
+ 
+ PKG_SOURCE_PROTO:=git
+ PKG_SOURCE_URL:=https://github.com/NICMx/Jool.git
+-PKG_SOURCE_VERSION:=66a791c90751d7941b08c142babe1deec73d0996
++PKG_SOURCE_VERSION:=0cbcbb2569de258297141988ba4b3e537aefb73e
+ PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_SOURCE_VERSION)
+-PKG_SOURCE:=$(PKG_NAME)-$(PKG_SOURCE_VERSION).tar.xz
++PKG_SOURCE:=$(PKG_NAME)-$(PKG_SOURCE_VERSION).tar.gz
++PKG_MIRROR_HASH:=bef17b6f8de1cbbf25a8df33d10349c5f00c296c6643bae2fd0909c4037a4ca7
+ 
+ PKG_BUILD_DIR=$(KERNEL_BUILD_DIR)/$(PKG_SOURCE_SUBDIR)
+ PKG_BUILD_PARALLEL:=1
+@@ -70,25 +71,45 @@ define Package/jool/description
+   $(call Package/jool/Default/description)
+ endef
+ 
+-define KernelPackage/jool
++define KernelPackage/jool/Default
+   SECTION:=kernel
+   CATEGORY:=Kernel modules
+   SUBMENU:=Network Support
+-  TITLE:=Jool kernel module
+   DEPENDS:= \
+     @IPV6 \
+     +kmod-crypto-md5 \
+     +kmod-nf-conntrack \
+     +kmod-nf-conntrack6
+-  FILES:= \
+-    $(PKG_BUILD_DIR)/mod/stateful/jool.$(LINUX_KMOD_SUFFIX) \
+-    $(PKG_BUILD_DIR)/mod/stateless/jool_siit.$(LINUX_KMOD_SUFFIX)
+ endef
+ 
+-define KernelPackage/jool/description
++define KernelPackage/jool
++  $(call Package/jool/Default)
++  TITLE:=Jool kernel modules meta-package
++  DEPENDS:=+kmod-jool-stateful +kmod-jool-stateless
++endef
++
++define KernelPackage/jool-stateful
++  $(call KernelPackage/jool/Default)
++  TITLE:=Jool stateful kernel module
++  FILES:=$(PKG_BUILD_DIR)/mod/stateful/jool.$(LINUX_KMOD_SUFFIX)
++endef
++
++define KernelPackage/jool-stateful/description
++  $(call Package/jool/Default/description)
++
++  This package provides only the stateful kernel module for Jool.
++endef
++
++define KernelPackage/jool-stateless
++  $(call KernelPackage/jool/Default)
++  TITLE:=Jool stateless kernel module
++  FILES:=$(PKG_BUILD_DIR)/mod/stateless/jool_siit.$(LINUX_KMOD_SUFFIX)
++endef
++
++define KernelPackage/jool-stateless/description
+   $(call Package/jool/Default/description)
+ 
+-  This package provides the kernel module for Jool.
++  This package provides only the stateless kernel module for Jool.
+ endef
+ 
+ define Package/jool-tools
+@@ -111,4 +132,6 @@ endef
+ 
+ $(eval $(call BuildPackage,jool))
+ $(eval $(call KernelPackage,jool))
++$(eval $(call KernelPackage,jool-stateful))
++$(eval $(call KernelPackage,jool-stateless))
+ $(eval $(call BuildPackage,jool-tools))
