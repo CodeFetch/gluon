@@ -184,8 +184,10 @@ static void mesh_add_if(const char *ifname, struct json_object *wireless,
 	char str_ip[INET6_ADDRSTRLEN] = {};
 	unsigned char mac[6] = {};
 
-	if (obtain_ifmac(mac, ifname))
+	if (obtain_ifmac(mac, ifname)) {
+		printf("could not obtain mac for device: %s", ifname);
 		return;
+	}
 
 	struct in6_addr lladdr = mac2ipv6(mac, "fe80::");
 	inet_ntop(AF_INET6, &lladdr.s6_addr, str_ip, INET6_ADDRSTRLEN);
@@ -219,7 +221,10 @@ static void handle_neighbour(char *line, struct json_object *obj) {
 			unsigned char ifmac[6] = {};
 			char str_ip[INET6_ADDRSTRLEN] = {};
 
-			obtain_ifmac(ifmac, (const char*)bn.ifname);
+			if (obtain_ifmac(ifmac, (const char*)bn.ifname)) {
+				printf("could not obtain mac for device: %s", bn.ifname);
+				return;
+			}
 			struct in6_addr lladdr = mac2ipv6(ifmac, "fe80::");
 			inet_ntop(AF_INET6, &lladdr.s6_addr, str_ip, INET6_ADDRSTRLEN);
 
