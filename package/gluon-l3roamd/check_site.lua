@@ -1,4 +1,4 @@
-need_string_match(in_domain({'node_prefix6'}), '^[%x:]+/64$')
+need_string_match(in_domain({'prefix6'}), '^[%x:]+/64$')
 need_string_match(in_domain({'node_client_prefix6'}), '^[%x:]+/64$')
 need_string_match(in_domain({'clat_prefix6'}), '^[%x:]+/48$')
 need_string_match(in_domain({'plat_prefix6'}), '^[%x:]+/48$')
