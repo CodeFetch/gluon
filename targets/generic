@@ -56,6 +56,7 @@ if envtrue.GLUON_DEBUG then
 	config 'CONFIG_NO_STRIP=y'
 	config '# CONFIG_USE_STRIP is not set'
 	config '# CONFIG_USE_SSTRIP is not set'
+	config 'CONFIG_SLUB_DEBUG=y'
 end
 
 
