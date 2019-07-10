@@ -1,0 +1,27 @@
+From: Vincent Wiemann <webmaster@codefetch.de>
+Date: Thu, 11 Jul 2019 01:09:06 +0200
+Subject: kernel: turn off object dumps on SLUB debug tracing
+
+Due to performance issues which make the device unresponsive when
+tracing big objects, the memory dumping needs to be turned off.
+
+diff --git a/target/linux/generic/pending-4.9/990-slub-debug-trace-turn-off-memory-dumps.patch b/target/linux/generic/pending-4.9/990-slub-debug-trace-turn-off-memory-dumps.patch
+new file mode 100644
+index 0000000000000000000000000000000000000000..7e83e4fe207dcaaef31c24e0c1902bf528355cd2
+--- /dev/null
++++ b/target/linux/generic/pending-4.9/990-slub-debug-trace-turn-off-memory-dumps.patch
+@@ -0,0 +1,14 @@
++--- a/mm/slub.c
+++++ b/mm/slub.c
++@@ -975,9 +975,11 @@ static void trace(struct kmem_cache *s,
++ 			object, page->inuse,
++ 			page->freelist);
++ 
+++		/* CodeFetch: Turn off object dumping due to performance issues
++ 		if (!alloc)
++ 			print_section(KERN_INFO, "Object ", (void *)object,
++ 					s->object_size);
+++		*/
++ 
++ 		dump_stack();
++ 	}

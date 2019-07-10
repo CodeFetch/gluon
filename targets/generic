@@ -54,8 +54,10 @@ end
 if envtrue.GLUON_DEBUG then
 	config 'CONFIG_DEBUG=y'
 	config 'CONFIG_NO_STRIP=y'
+	config 'CONFIG_KERNEL_SLABINFO=y'
 	config '# CONFIG_USE_STRIP is not set'
 	config '# CONFIG_USE_SSTRIP is not set'
+	config 'CONFIG_KERNEL_PROFILING=y'
 end
 
 
